@@ -1,11 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Shortcut Launcher</title>
+    <meta charset="utf-8">
+    <title>Launching Shortcut...</title>
 </head>
-<body>
-  <h1>Shortcut Launcher</h1>
-  <p>This page is working.</p>
+
+<body style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+
+    <p id="status">Opening your shortcut...</p>
+    <p>
+        If nothing happens,
+        <a id="fallback-link" href="#">click here</a>.
+    </p>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const shortcutName = params.get("name");
+
+        if (shortcutName) {
+            const shortcutUrl =
+                "shortcuts://run-shortcut?name=" +
+                encodeURIComponent(shortcutName);
+
+            // Set fallback first
+            document.getElementById("fallback-link").href = shortcutUrl;
+
+            // Then attempt automatic launch
+            window.location.href = shortcutUrl;
+        } else {
+            document.getElementById("status").innerText =
+                "No shortcut was specified.";
+        }
+    </script>
+
 </body>
 </html>
