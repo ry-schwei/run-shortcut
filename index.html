@@ -1,35 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Launching Shortcut...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Opening App...</title>
 </head>
 
 <body style="font-family: sans-serif; text-align: center; margin-top: 50px;">
 
-    <p id="status">Opening your shortcut...</p>
+    <h2>Opening App...</h2>
+    <p id="status">Attempting to launch your app.</p>
+
     <p>
-        If nothing happens,
-        <a id="fallback-link" href="#">click here</a>.
+        <a id="fallback-link" href="#" style="display:none;">
+            Click here to open
+        </a>
     </p>
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        const shortcutName = params.get("name");
 
-        if (shortcutName) {
-            const shortcutUrl =
-                "shortcuts://run-shortcut?name=" +
-                encodeURIComponent(shortcutName);
+        let destination = params.get("url");
 
-            // Set fallback first
-            document.getElementById("fallback-link").href = shortcutUrl;
+        // Preserve existing Shortcut links
+        if (!destination && params.get("name")) {
+            destination = "shortcuts://run-shortcut?name=" +
+                encodeURIComponent(params.get("name"));
+        }
 
-            // Then attempt automatic launch
-            window.location.href = shortcutUrl;
+        const status = document.getElementById("status");
+        const fallback = document.getElementById("fallback-link");
+
+        if (destination) {
+            try {
+                const parsed = new URL(destination);
+
+                // Permit only supported app-link schemes.
+                const allowedSchemes = [
+                    "shortcuts:",
+                    "kindle:",
+                    "ical:",
+                    "mailto:",
+                    "facetime:",
+                    "tel:",
+                    "sms:",
+                    "maps:",
+                    "x-apple-reminderkit:"
+                ];
+
+                if (!allowedSchemes.includes(parsed.protocol)) {
+                    throw new Error("Unsupported URL scheme");
+                }
+
+                fallback.href = destination;
+                fallback.style.display = "inline";
+
+                window.location.href = destination;
+
+            } catch (error) {
+                status.textContent =
+                    "Unable to open this link: " + error.message;
+            }
         } else {
-            document.getElementById("status").innerText =
-                "No shortcut was specified.";
+            status.textContent = "No destination provided.";
         }
     </script>
 
